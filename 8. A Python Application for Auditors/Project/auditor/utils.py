@@ -2,16 +2,9 @@
 Module providing utility functions for this project.
 
 These functions are general purpose utilities used by other modules in this project.
-Some of these functions were exercises in early course modules and should be copied
-over into this file.
-
-The preconditions for many of these functions are quite messy.  While this makes writing 
-the functions simpler (because the preconditions ensure we have less to worry about), 
-enforcing these preconditions can be quite hard. That is why it is not necessary to 
-enforce any of the preconditions in this module.
 
 Author: Avery Jan
-Date: 6-19-2022
+Date: 6-19-2023
 """
 import csv
 import json
@@ -99,17 +92,17 @@ def str_to_time(timestamp,tzsource=None):
     Returns the datetime object for the given timestamp (or None if timestamp is 
     invalid).
     
-    This function should just use the parse function in dateutil.parser to
+    This function uses the parse function in dateutil.parser to
     convert the timestamp to a datetime object.  If it is not a valid date (so
-    the parser crashes), this function should return None.
+    the parser crashes), this function returns None.
     
-    If the timestamp has a time zone, then it should keep that time zone even if
+    If the timestamp has a time zone, then it keeps that time zone even if
     the value for tzsource is not None.  Otherwise, if timestamp has no time zone 
     and tzsource is not None, then this function will use tzsource to assign 
     a time zone to the new datetime object.
     
     The value for tzsource can be None, a string, or a datetime object.  If it 
-    is a string, it will be the name of a time zone, and it should localize the 
+    is a string, it will be the name of a time zone, and this function localizes the 
     timestamp.  If it is another datetime, then the datetime object created from 
     timestamp should get the same time zone as tzsource.
     
@@ -120,9 +113,7 @@ def str_to_time(timestamp,tzsource=None):
     Precondition: tzsource is either None, a string naming a valid time zone,
     or a datetime object.
     """
-    # Note: Use the code from the previous exercise and add time zone handling.
-    # Use localize if tzsource is a string; otherwise replace the time zone if not None
-
+    
     try:
         d = parse(timestamp)
  
@@ -151,7 +142,7 @@ def daytime(time,daycycle):
     A time is during the day if it is after sunrise but before sunset, as
     indicated by the daycycle dicitionary.
     
-    A daycycle dictionary has keys for several years (as int).  The value for
+    A daycycle dictionary has keys for several years (as str).  The value for
     each year is also a dictionary, taking strings of the form 'mm-dd'.  The
     value for that key is a THIRD dictionary, with two keys "sunrise" and
     "sunset".  The value for each of those two keys is a string in 24-hour
@@ -174,7 +165,7 @@ def daytime(time,daycycle):
     In addition, the daycycle dictionary has a key 'timezone' that expresses the
     timezone as a string. This function uses that timezone when constructing
     datetime objects from this set.  If the time parameter does not have a timezone,
-    we assume that it is in the same timezone as the daycycle dictionary
+    we assume that it is in the same timezone as the daycycle dictionary.
     
     Parameter time: The time to check
     Precondition: time is a datetime object
@@ -182,16 +173,13 @@ def daytime(time,daycycle):
     Parameter daycycle: The daycycle dictionary
     Precondition: daycycle is a valid daycycle dictionary, as described above
     """
-    # Note: Use the code from the previous exercise to get sunset AND sunrise
-    # Add a timezone to time if one is missing (the one from the daycycle)
-
     year = time.strftime('%Y')
 
     if year not in daycycle.keys():
         return None
     
     if year in daycycle.keys():
-        #create timestamps for creating sunrise and sunset using str_to_time function above
+        #get the timestamps to be used for creating sunrise and sunset datetime objects
         mm_dd = time.strftime('%m-%d')
         sr_time = daycycle[year][mm_dd]['sunrise']
         sr_tstamp = time.strftime('%Y-%m-%d') + 'T' + sr_time
@@ -211,8 +199,6 @@ def daytime(time,daycycle):
 
     # compare time with sunrise and sunset (if time.tzinfo ==None)
     if time.tzinfo == None: 
-#        tz = pytz.timezone(daycycle['timezone'])       
-#        new_time = tz.localize(time)
         new_time = time.replace(tzinfo=sunrise.tzinfo)
         if new_time > sunrise and new_time < sunset:
             return True
@@ -226,17 +212,14 @@ def get_for_id(id,table):
     Returns (a copy of) a row of the table with the given id.
     
     Table is a two-dimensional list where the first element of each row is an identifier
-    (string).  This function searches table for the row with the matching identifier and
+    (string).  This function searches the table for the row with the matching identifier and
     returns a COPY of that row. If there is no match, this function returns None.
     
-    This function is useful for extract rows from a table of pilots, a table of instructors,
-    or even a table of planes.
-    
-    Parameter id: The id of the student or instructor
+    Parameter id: The id of the student
     Precondition: id is a string
     
-    Parameter table: The 2-dimensional table of data
-    Precondition: table is a non-empty 2-dimension list of strings
+    Parameter table: The 2-dimensional list of data
+    Precondition: table is a non-empty 2-dimensional list of strings
     """
 
     for x in range(1, len(table)):        
