@@ -1,10 +1,10 @@
 """
-Module determining pilot certifications, ratings, and endorsements.
+Module determining pilot certifications, ratings, endorsements, and restrictions.
 
-The restrictions that we place on a pilot depend on their qualifications.  There are three
+The restrictions placed on a pilot depend on their qualifications.  There are three
 ways to think about a pilot.  
 
-(1) Certifications.  These are what licenses a pilot has.  We also use these to classify
+(1) Certifications.  These are what licenses a pilot has.  These are also used to classify
 where the student is in the licensing process.  Is the student post solo (can fly without
 instructor), but before license?  Is the student 50 hours past their license (a threshold 
 that helps with insurance)?
@@ -30,16 +30,10 @@ a certain qualification at the time of takeoff. As this program is auditing the 
 over a course of a year, a student may not be instrument rated for one flight but might
 be for another.
 
-The preconditions for many of these functions are quite messy.  While this makes writing 
-the functions simpler (because the preconditions ensure we have less to worry about), 
-enforcing these preconditions can be quite hard. That is why it is not necessary to 
-enforce any of the preconditions in this module.
-
 Author: Avery Jan
 Date: 6-21-2023
 """
 import utils
-
 
 # CERTIFICATION CLASSIFICATIONS
 # The certification of this pilot is unknown
@@ -64,7 +58,7 @@ def get_certification(takeoff,student):
     PILOT_CERTIFIED if the student has a private license before this takeoff and 
     PILOT_STUDENT if the student has soloed before this takeoff.  A pilot that has only
     just joined the school is PILOT_NOVICE.  If the flight takes place before the student
-    has even joined the school, the result is PILOT_INVALID.
+    has even joined the school, the certification is PILOT_INVALID.
     
     Recall that a student is a 10-element list of strings.  The first three elements are
     the student's identifier, last name, and first name.  The remaining elements are all
@@ -73,10 +67,10 @@ def get_certification(takeoff,student):
     rating, time of advanced endorsement, and time of multiengine endorsement.
     
     Parameter takeoff: The takeoff time of this flight
-    Precondition: takeoff is a datetime object with a time zone
+    Precondition: takeoff is a datetime object with a time zone.
     
     Parameter student: The student pilot
-    Precondition: student is 10-element list of strings representing a pilot
+    Precondition: student is 10-element list of strings representing a pilot.
     """
                       
     result = ''
@@ -107,91 +101,21 @@ def get_certification(takeoff,student):
         return PILOT_50_HOURS
 
 
-def has_instrument_rating(takeoff,student):
-    """
-    (OPTIONAL)
-    Returns True if the student has an instrument rating at the time of takeoff, False otherwise
-    
-    Recall that a student is a 10-element list of strings.  The first three elements are
-    the student's identifier, last name, and first name.  The remaining elements are all
-    timestamps indicating the following in order: time joining the school, time of first 
-    solo, time of private license, time of 50 hours certification, time of instrument 
-    rating, time of advanced endorsement, and time of multiengine endorsement.
-    
-    NOTE: Just because a pilot has an instrument rating does not mean that every flight
-    with that pilot is an IFR flight.  It just means the pilot could choose to use VFR
-    or IFR rules.
-    
-    Parameter takeoff: The takeoff time of this flight
-    Precondition: takeoff is a datetime object
-    
-    Parameter student: The student pilot
-    Precondition: student is 10-element list of strings representing a pilot
-    """
-    pass                    # Implement this function for stage 2 audit
-
-
-def has_advanced_endorsement(takeoff,student):
-    """
-    (OPTIONAL)
-    Returns True if the student has an endorsement to fly an advanced plane at the time of takeoff.
-    
-    The function returns False otherwise.
-    
-    Recall that a student is a 10-element list of strings.  The first three elements are
-    the student's identifier, last name, and first name.  The remaining elements are all
-    timestamps indicating the following in order: time joining the school, time of first 
-    solo, time of private license, time of 50 hours certification, time of instrument 
-    rating, time of advanced endorsement, and time of multiengine endorsement.
-    
-    Parameter takeoff: The takeoff time of this flight
-    Precondition: takeoff is a datetime object
-    
-    Parameter student: The student pilot
-    Precondition: student is 10-element list of strings representing a pilot
-    """
-    pass                    # Implement this function for stage 2 audit
-
-
-def has_multiengine_endorsement(takeoff,student):
-    """
-    (OPTIONAL)
-    Returns True if the student has an endorsement to fly an multiengine plane at the time of takeoff.
-    
-    The function returns False otherwise.
-    
-    Recall that a student is a 10-element list of strings.  The first three elements are
-    the student's identifier, last name, and first name.  The remaining elements are all
-    timestamps indicating the following in order: time joining the school, time of first 
-    solo, time of private license, time of 50 hours certification, time of instrument 
-    rating, time of advanced endorsement, and time of multiengine endorsement.
-    
-    Parameter takeoff: The takeoff time of this flight
-    Precondition: takeoff is a datetime object
-    
-    Parameter student: The student pilot
-    Precondition: student is 10-element list of strings representing a pilot
-    """
-    pass                    # Implement this function for stage 2 audit
-
 def get_best_value(data, index, maximum=True):
     """
     Returns the 'best' value from a given column in a 2-dimensional nested list.
     
-    This function is a helper function for get_minimums (whose docstring you should
-    read and understand first). 
+    This function is a helper function for get_minimums. 
     
-    The data parameter is a 2-dimensional nested list of data.  The index parameter
+    The data parameter is a 2-dimensional nested list of data. The index parameter
     indicates which "colummn" of data should be evaluated. Each item in that column
     is expected to be a number in string format.  Each item should be evaluated as a 
-    float and the best value selected as the return value for the function. The
+    float and the best value is selected as the return value for the function. The
     best value is determined by the maximum parameter and is either the highest or
-    lowest float value.
-
-    The 2D list does not include a header row. It should not be modified in any way.
+    lowest float value of the column. The 2D list does not include a header row. 
     
     Parameter data: a 2-dimensional nested list of data
-    Precondition: the column referenced by index should by numbers in string format
+    Precondition: the column referenced by index should be numbers in string format
     
     Parameter index: position to examine in each row of data
     Precondition: index is a an integer
@@ -237,7 +161,7 @@ def get_minimums(cert, area, instructed, vfr, daytime, minimums):
     of the first four columns match.
     
     The first column (CATEGORY) has values 'Student', 'Certified', '50 Hours', or 'Dual'.
-    If the value 'Student', it is a match if cert is PILOT_STUDENT or higher.  If the
+    If the value is 'Student', it is a match if cert is PILOT_STUDENT or higher.  If the
     value is 'Certified', it is a match if cert is PILOT_CERTIFIED or higher. If it is 
     '50 Hours', it is only a match if cert is PILOT_50_HOURS. The value 'Dual' only
     matches if instructed is True and even if cert is PILOT_INVALID or PILOT_NOVICE.
@@ -256,7 +180,7 @@ def get_minimums(cert, area, instructed, vfr, daytime, minimums):
     Once the function finds the all matching rows, it searches for the most advantageous
     values for CEILING, VISIBILITY, WIND, and CROSSWIND. Lower values of CEILING and
     VISIBILITY are better.  Higher values for WIND and CROSSWIND are better.  It then
-    returns this four values as a list of four floats (in the same order they appear)
+    returns these four values as a list of four floats in the same order they appear
     in the table.
     
     Example: Suppose minimums is the table
@@ -293,20 +217,21 @@ def get_minimums(cert, area, instructed, vfr, daytime, minimums):
     Parameter instructed: Whether an instructor is present
     Precondition: instructed is a boolean
     
-    Parameter vfr: Whether the pilot has filed this as an VFR flight
+    Parameter vfr: Whether the pilot has filed this flight plan as an VFR flight
     Precondition: vfr is a boolean
     
     Parameter daytime: Whether this flight is during the day
     Precondition: daytime is boolean
     
     Parameter minimums: The table of allowed minimums
-    Precondition: minimums is a 2d-list (table) as described above, including header
+    Precondition: minimums is a 2d-list (table) as described above, including header.
     """
-    # Find all rows that can apply to this student
-    # Find the best values for each column of the row
-    # HINT: remember to use get_best_value to find best value in list of matches
+    # Find all rows that apply to this student.
+    # Find the best values for each column of the row.
+    # Use get_best_value to find best value in the list of matches.
+
+    # Section I: Build the Matching Table with Each Row Being a Match for This Stucent.
     
-    # Section I: Build the Matching Table (a 2-D nested list, each row is a matching stucent)
     data = []
 
     for row in range(1, len(minimums)):
@@ -715,7 +640,8 @@ def get_minimums(cert, area, instructed, vfr, daytime, minimums):
                                 data.append(minimums[row])       
                                  
 
-    # Section II: Build a 1-D list (best value for each of last 4 cols in minimums)   
+    # Section II: Build a 1-D list (best values for each of the last 4 columns in minimums)   
+    
     bvlist = []
 
     if len(data)>0:
