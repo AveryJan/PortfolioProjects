@@ -3,34 +3,22 @@ Module to check violations for a flight lesson.
 
 This module processes the primary violations, which are violations of weather restrictions. 
 Weather restrictions express the minimum conditions that a pilot is allowed to fly in.  
-So if a pilot has a ceiling minimum of 2000 feet, and there is cloud cover at 1500 feet, 
-the pilot should not fly.To understand weather minimums, you have to integrate three 
+So, if a pilot has a ceiling minimum of 2000 feet and there is cloud cover at 1500 feet, 
+the pilot should not fly.To determine weather minimums, it is necessary to integrate three 
 different files: daycycle.json (for sunrise and sunset), weather.json (for hourly weather 
-observations at the airport), and minimums.csv (for the schools minimums set by agreement 
-with the insurance agency). You should look at those files BRIEFLY to familiarize yourself 
-with them.
+observations at the airport), and minimums.csv (for the school's minimums set by agreement 
+with the insurance agency). 
 
-This module can get overwhelming if you panic and think too much about the big picture.  
-Like a good software developer, you should focus on the specifications and do a little
-at a time.  While these functions may seem like they require a lot of FAA knowledge, all
-of the information you need is in the specifications. They are complex specifications,
-but all of the information you need is there.  Combined with the provided unit tests
-in tests.py, this assignment is very doable.
-
-It may seem weird that these functions only check weather conditions at the time of 
+The functions in this module only check weather conditions at the time of 
 takeoff and not the entire time the flight is in the air.  This is standard procedure 
-for this insurance company.  The school is only liable if they let a pilot take off in 
-the wrong conditions.  If the pilot stays up in adverse conditions, responsibility shifts 
+for the insurance company. The school is only liable if they let a pilot take off in 
+the wrong conditions. If the pilot stays up in adverse conditions, responsibility shifts 
 to the pilot.
 
-The preconditions for many of these functions are quite messy.  While this makes writing 
-the functions simpler (because the preconditions ensure we have less to worry about), 
-enforcing these preconditions can be quite hard. That is why it is not necessary to 
-enforce any of the preconditions in this module.
-
 Author: Avery Jan
-Date: 6-26-2022
+Date: 6-26-2023
 """
+
 import utils
 import pilots
 import os.path
@@ -39,20 +27,20 @@ import os.path
 # WEATHER FUNCTIONS
 def bad_visibility(visibility,minimum):
     """
-    Returns True if the visibility measurement violates the minimum, False otherwise
+    Returns True if the visibility measurement violates the minimum, False otherwise.
     
     A valid visibility measurement is EITHER the string 'unavailable', or a dictionary 
     with (up to) four values: 'minimum', 'maximum',  'prevailing', and 'units'. Only 
     'prevailing' and 'units' are required; the other two are optional. The units may be 
-    'FT' (feet) or 'SM' for (statute) miles, and explain how to interpret other three 
-    fields, which are all floats.
+    'FT' (feet) or 'SM' for (statute) miles and the other three fields are all floats.
     
-    This function should compare ths visibility 'minimum' (if it exists) against the 
-    minimum parameter. Else it compares the 'prevailing' visibility. This function returns
-    True if minimum is more than the measurement. If the visibility is 'unavailable', 
-    then this function returns True (indicating bad record keeping).
+    If the visibility measurement is a dictionary, this function compares ths visibility
+    'minimum' (if it exists) against the parameter minimum. Otherwise, it compares the 
+    'prevailing' visibility against the parameter minimum. This function returns True 
+    if parameter minimum is more than the measurement. If the visibility measurement is 
+    'unavailable', then this function returns True (indicating bad record keeping).
     
-    Example: Suppose we have the following visibility measurement.
+    Example: Suppose this is a visibility measurement.
         
         {
             "prevailing": 21120.0,
@@ -61,8 +49,8 @@ def bad_visibility(visibility,minimum):
             "units": "FT"
         }
     
-    Given the above measurement, this function returns True if visibility is 0.25 (miles)
-    and False if it is 1.
+    Given the above measurement ('minimum' in the measurement is 1400.0 FT, or 0.26 SM), 
+    this function returns True if the parameter minimum is 1 SM and False if it is 0.25 SM.
     
     Parameter visibility: The visibility information
     Precondition: visibility is a valid visibility measurement, as described above.
@@ -86,24 +74,24 @@ def bad_visibility(visibility,minimum):
 
 def bad_winds(winds,maxwind,maxcross):
     """
-    Returns True if the wind measurement violates the maximums, False otherwise
+    Returns True if the wind measurement violates the maximums, False otherwise.
     
-    A valid wind measurement is EITHER the string 'calm', the string 'unavailable' or 
+    A valid wind measurement is EITHER the string 'calm', the string 'unavailable', OR 
     a dictionary with (up to) four values: 'speed', 'crosswind', 'gusts', and 'units'. 
-    Only 'speed' and 'units' are required if it is a dictionary; the other two are 
-    optional. The units are either be 'KT' (knots) or 'MPS' (meters per second), and 
-    explain how to interpret other three fields, which are all floats.
+    Only 'speed' and 'units' are required if it is a dictionary; the other two values 
+    are optional. The units are either 'KT' (knots) or 'MPS' (meters per second) and 
+    the other three fields are all floats.
     
-    This function should compare 'speed' or 'gusts' against the maxwind parameter
-    (whichever is worse) and 'crosswind' against the maxcross. If either measurement is greater
-    than the allowed maximum, this function returns True.
+    This function compares 'speed' or 'gusts' against the parameter maxwind 
+    (whichever is worse) and 'crosswind' against the parameter maxcross. If either 
+    measurement is greater than the allowed maximum, this function returns True.
     
     If the winds are 'calm', then this function always returns False. If the winds are
     'unavailable', then this function returns True (indicating bad record keeping).
     
-    For conversion information, 1 MPS is roughly 1.94384 knots.
+    For conversion information, 1 MPS (meter per second) is about 1.94384 'KT' (knots).
     
-    Example: Suppose we have the following wind measurement.
+    Example: Suppose this is a wind measurement.
         
         {
             "speed": 12.0,
@@ -113,8 +101,7 @@ def bad_winds(winds,maxwind,maxcross):
         }
     
     Given the above measurement, this function returns True if maxwind is 15 or maxcross is 5.
-    If both maxwind is 20 and maxcross is 10, it returns False.  (If 'units' were 'MPS'
-    it would be false in both cases).
+    If both maxwind is 20 and maxcross is 10, it returns False. 
     
     Parameter winds: The wind speed information
     Precondition: winds is a valid wind measurement, as described above.
@@ -150,20 +137,20 @@ def bad_winds(winds,maxwind,maxcross):
 
 def bad_ceiling(ceiling,minimum):
     """
-    Returns True if the ceiling measurement violates the minimum, False otherwise
+    Returns True if the ceiling measurement violates the minimum, False otherwise.
     
     A valid ceiling measurement is EITHER the string 'clear', the string 'unavailable', 
-    or a list of cloud layer measurements. A cloud layer measurement is a dictionary with 
-    three required keys: 'type', 'height', and 'units'.  Type is one of 'a few', 
-    'scattered', 'broken', 'overcast', or 'indefinite ceiling'. The value 'units' must 
-    be 'FT', and specifies the units for the float associated with 'height'.
+    OR a list of cloud layer measurements. A cloud layer measurement is a dictionary 
+    with three required keys: 'type', 'height', and 'units'. Type is one of 'a few', 
+    'scattered', 'broken', 'overcast', or 'indefinite ceiling'. The value of 'units' 
+    must be 'FT' and the 'units' is for the float associated with 'height'.
     
     If the ceiling is 'clear', then this function always returns False. If the ceiling 
     is 'unavailable', then this function returns True (indicating bad record keeping).
     Otherwise, it compares the minimum allowed ceiling against the lowest cloud layer 
     that is either 'broken', 'overcast', or 'indefinite ceiling'.
     
-    Example: Suppose we have the following ceiling measurement.
+    Example: Suppose this is a ceiling measurement.
         
         [
             {
@@ -189,60 +176,22 @@ def bad_ceiling(ceiling,minimum):
     Parameter minimum: The minimum allowed ceiling (in feet)
     Precondition: minimum is a float or int
     """
-                        
+
     if ceiling == 'clear':
         return False
     elif ceiling == 'unavailable':
         return True
-
-    br_height = 1000000000.0
-    ov_height = 1000000000.0
-    in_height = 1000000000.0
-    af_height = 0.0
-    sc_height = 0.0
-
-    for x in range(len(ceiling)):
-        if ceiling[x]['type'] == 'broken':
-            if ceiling[x]['height'] < br_height:
-                br_height = ceiling[x]['height']
-
-        elif ceiling[x]['type'] == 'overcast':
-            if ceiling[x]['height'] < ov_height:
-                ov_height = ceiling[x]['height']
-
-        elif ceiling[x]['type'] == 'indefinite ceiling':
-            if ceiling[x]['height'] < in_height:
-                in_height = ceiling[x]['height']
-        
-        elif ceiling[x]['type'] == 'a few':
-            af_height = 0.0
-
-        elif ceiling[x]['type'] == 'scattered':
-            sc_height = 0.0      
-
-    if af_height==0.0 and br_height==0.0 and ov_height==0.0 and in_height==0.0:
-        return False
-    elif sc_height==0.0 and br_height==0.0 and ov_height==0.0 and in_height==0.0:
-        return False
-    elif af_height==0.0 and sc_height==0.0 and br_height==0.0 and ov_height==0.0 \
-    and in_height==0.0:
-        return False
-    elif br_height > 0 and ov_height > 0 and in_height > 0:       #1
-        measurement = min(br_height, ov_height, in_height)
-    elif br_height > 0 and ov_height > 0:    #2
-        measurement = min(br_height, ov_height)
-    elif br_height > 0 and in_height > 0:    #3
-        measurement = min(br_height, in_height)
-    elif ov_height > 0 and in_height > 0:    #8
-        measurement = min(ov_height, in_height)
-    elif br_height > 0:   #4
-        measurement = br_height
-    elif ov_height > 0:   #6
-        measurement = ov_height
-    elif in_height > 0:   #7
-        measurement = in_height 
     
-    return measurement < minimum                 
+    measurement = []   # accumulator
+    
+    for x in range(len(ceiling)):
+        if ceiling[x]['type']=='broken' or ceiling[x]['type']=='overcast' or ceiling[x]['type']=='indefinite ceiling'
+            measurement.append(ceiling[x]['height'])
+    
+    if len(measurement) > 0:
+        return min(measurement) < minimum    
+    elif len(measurement) == 0:
+        return False
 
 
 def get_weather_report(takeoff,weather):
