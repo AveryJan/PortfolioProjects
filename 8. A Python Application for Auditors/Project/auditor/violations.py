@@ -185,7 +185,9 @@ def bad_ceiling(ceiling,minimum):
     measurement = []   # accumulator
     
     for x in range(len(ceiling)):
-        if ceiling[x]['type']=='broken' or ceiling[x]['type']=='overcast' or ceiling[x]['type']=='indefinite ceiling'
+        if ceiling[x]['type']=='broken' or ceiling[x]['type']=='overcast' or \
+            ceiling[x]['type']=='indefinite ceiling'
+        
             measurement.append(ceiling[x]['height'])
     
     if len(measurement) > 0:
