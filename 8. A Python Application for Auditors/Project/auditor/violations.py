@@ -256,7 +256,7 @@ def get_weather_report(takeoff,weather):
     },
     
     If there is a report whose timestamp matches the ISO representation of takeoff, 
-    this function uses that report.  Otherwise it searches the dictionary for the most
+    this function uses that report.  Otherwise, it searches the dictionary for the most
     recent report before (but not equal to) takeoff.  If there is no such report, it
     returns None.
     
@@ -269,40 +269,39 @@ def get_weather_report(takeoff,weather):
     
     Paramater weather: The weather report dictionary 
     Precondition: weather is a dictionary formatted as described above
+    
+    Note: Looping through the dictionary is VERY slow because it is so large.
+    So, convert the takeoff time to an ISO string and search for that first.
+    Only loop through the dictionary as a back-up if that fails. 
     """
-    # Note: Looping through the dictionary is VERY slow because it is so large
-    # Should convert the takeoff time to an ISO string and search for that first.
-    # Only loop through the dictionary as a back-up if that fails.
     
-    # Search for time in dictionary
-    # As fall back, find the closest time before takeoff
-    
-    import datetime
-
+    # Get the ISO representation of takeoff.
     isostring = takeoff.isoformat()
     
-    # Find exact match
+    # Find exact match for ISO string of takeoff.
     if isostring in weather:
         return weather[isostring]
        
-    # Did not find exact match => Apply Seth approach
+    # Find the most recent report before takeoff.
     w_list = list(weather)
     last_key = w_list[len(w_list)-1]
     result = utils.str_to_time(last_key, tzsource=None)
  
     for k in weather.keys():  
-        key = utils.str_to_time(k,tzsource=None)    #create a datetime object of k
+        key = utils.str_to_time(k,tzsource=None)
         if key < takeoff: 
             if key > result:
                 result = utils.str_to_time(k,tzsource=None)
 
-    timestamp = result.isoformat()     # get the key from result datetime objet in isoformat
+    # Get the ISO representation of result.
+    timestamp = result.isoformat()     
+    
     return weather[timestamp]   
 
 
 def get_weather_violation(weather,minimums):
     """
-    Returns a string representing the type of weather violation (empty string if flight is ok)
+    Returns a string representing the type of weather violation (empty string if flight is ok).
     
     The weather reading is a dictionary with the keys: 'visibility', 'wind', and 'sky'.
     These correspond to a visibility, wind, and ceiling measurement, respectively. It
@@ -339,27 +338,26 @@ def get_weather_violation(weather,minimums):
             ]
         }
     
-    The minimums is a list of the four minimums ceiling, visibility, and max windspeed,
+    The minimums is a list of the four minimums: ceiling, visibility, max windspeed,
     and max crosswind speed in that order.  Ceiling is in feet, visibility is in statute
-    miles, max wind and cross wind speed are both in knots. For example, 
+    miles, max wind and crosswind speed are both in knots. For example, 
     [3000.0,10.0,20.0,8.0] is a potential minimums list.
     
     This function uses bad_visibility, bad_winds, and bad_ceiling as helpers. It returns
     'Visibility' if the only problem is bad visibility, 'Winds' if the only problem is 
     wind, and 'Ceiling' if the only problem is the ceiling.  If there are multiple
-    problems, it returns 'Weather', It returns 'Unknown' if no weather reading is 
-    available (e.g. weather is None).  Finally, it returns '' (the empty string) if 
+    problems, it returns 'Weather'. It returns 'Unknown' if no weather reading is 
+    available (e.g. weather is None). Finally, it returns '' (the empty string) if 
     the weather is fine and there are no violations.
     
     Parameter weather: The weather measure
-    Precondition: weather is dictionary containing a visibility, wind, and ceiling measurement,
-    or None if no weather reading is available.
+    Precondition: weather is dictionary containing a visibility, wind, and ceiling 
+    measurement, or None if no weather reading is available.
     
     Parameter minimums: The safety minimums for ceiling, visibility, wind, and crosswind
     Precondition: minimums is a list of four floats
     """
-                        
-    
+                         
     if weather == None:
         result = 'Unknown'
         return result
@@ -403,7 +401,7 @@ LESSONS  = 'lessons.csv'
 
 def list_weather_violations(directory):
     """
-    Returns the (annotated) list of flight reservations that violate weather minimums.
+    Returns the (annotated) list of flight lessons that violate weather minimums.
     
     This function reads the data files in the given directory (the data files are all
     identified by the constants defined above in this module).  It loops through the
@@ -413,22 +411,22 @@ def list_weather_violations(directory):
     This function returns a list that contains a copy of each violating lesson, together 
     with the violation appended to the lesson.
     
-    Example: Suppose that the lessons
+    Example: Suppose that the lessons are:
         
         S00687  548QR  I061  2017-01-08T14:00:00-05:00  2017-01-08T16:00:00-05:00  VFR  Pattern
         S00758  548QR  I072  2017-01-08T09:00:00-05:00  2017-01-08T11:00:00-05:00  VFR  Pattern
         S00971  426JQ  I072  2017-01-12T13:00:00-05:00  2017-01-12T15:00:00-05:00  VFR  Pattern
     
     violate for reasons of 'Winds', 'Visibility', and 'Ceiling', respectively (and are the
-    only violations).  Then this function will return the 2d list
+    only violations for these lessons).  Then this function will return the 2d list:
         
         [[S00687, 548QR, I061, 2017-01-08T14:00:00-05:00, 2017-01-08T16:00:00-05:00, VFR, Pattern, Winds],
          [S00758, 548QR, I072, 2017-01-08T09:00:00-05:00, 2017-01-08T11:00:00-05:00, VFR, Pattern, Visibility],
          [S00971, 426JQ, I072, 2017-01-12T13:00:00-05:00, 2017-01-12T15:00:00-05:00, VFR, Pattern, Ceiling]]
     
-    REMEMBER: VFR flights are subject to minimums with VMC in the row while IFR flights 
+    Note: VFR flights are subject to minimums with VMC in the row while IFR flights 
     are subject to minimums with IMC in the row.  The examples above are all VFR flights.
-    If we changed the second lesson to
+    If the second lesson were changed to
     
         S00758, 548QR, I072, 2017-01-08T09:00:00-05:00, 2017-01-08T11:00:00-05:00, IFR, Pattern
     
@@ -439,14 +437,13 @@ def list_weather_violations(directory):
     Precondition: directory is the name of a directory containing the files 'daycycle.json',
     'weather.json', 'minimums.csv', 'students.csv', and 'lessons.csv'
     """
-    # Load in all of the files
-    
-    # For each of the lessons
-        # Get the takeoff time
-        # Get the pilot credentials
-        # Get the pilot minimums
-        # Get the weather conditions
-        # Check for a violation and add to result if so
+    # Load in all of the files.
+    # For each of the lessons:
+        # Get the takeoff time.
+        # Get the pilot credentials.
+        # Get the pilot minimums.
+        # Get the weather conditions.
+        # Check for a violation and add to result if so.
     
     # Load in all of the files    
     daycycle = utils.read_json(os.path.join(directory,DAYCYCLE))  # A dictionary
@@ -455,16 +452,18 @@ def list_weather_violations(directory):
     students = utils.read_csv(os.path.join(directory, STUDENTS))  # A 2-D list with header
     lessons = utils.read_csv(os.path.join(directory, LESSONS))   # A 2-D list with header
 
-    result = []                # will be a 2-D list if theres is any weather violation
-
-    # For each of the lessons
+    result = []   
+    
     for row in range(1, len(lessons)):
-        # Get the takeoff time
+        
+        # Get takeoff as a datetime object.
         timezone = daycycle['timezone']
-        takeoff = utils.str_to_time(lessons[row][3], tzsource = timezone )    # takeoff as a datetime object
-        # Get the pilot credentials
-        id = lessons[row][0]                            # get pilot id from lessons table
-        student = utils.get_for_id(id,students)         # get pilot credentials from students table         
+        takeoff = utils.str_to_time(lessons[row][3], tzsource = timezone)
+        
+        # Get the pilot credentials.
+        id = lessons[row][0]                            
+        student = utils.get_for_id(id,students)
+        
         # Get the pilot minimum
         cert = pilots.get_certification(takeoff, student)
         area = lessons[row][6]
@@ -478,15 +477,16 @@ def list_weather_violations(directory):
             vfr = False       
         daytime = utils.daytime(takeoff, daycycle)
         p_minimums = pilots.get_minimums(cert, area, instructed, vfr, daytime, minimums)
-        # Get the weather conditions
+        
+        # Get the weather conditions.
         report = get_weather_report(takeoff, weather)
         if report!=None and len(p_minimums)>0: 
             violation = get_weather_violation(report,p_minimums)
-        # Check for a violation and add to result if so
+            
+        # Check for a violation and add to result if so.
             if len(violation) > 0:
                 lessons[row].append(violation)
                 result.append(lessons[row])
         
     return result
     
-
